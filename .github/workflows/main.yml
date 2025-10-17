@@ -39,10 +39,14 @@ jobs:
       - name: CMake Setup
         working-directory: ${{env.GITHUB_WORKSPACE}}
         run: cmake --preset vcpkg-win64-x86
-
+        
       - name: CMake Build
         working-directory: ${{env.GITHUB_WORKSPACE}}
         run: cmake --build build
+
+      - name: CMake Test
+        working-directory: ${{env.GITHUB_WORKSPACE}}
+        run: ctest --test-dir build
 
       - name: 'Upload x86-sse2 build'
         uses: actions/upload-artifact@v4
