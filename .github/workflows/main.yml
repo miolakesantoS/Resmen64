@@ -36,49 +36,17 @@ jobs:
         shell: powershell
         run: echo "VERSION_SUFFIX is $env:VERSION_SUFFIX"
 
-      - name: Add MSBuild to PATH
-        uses: microsoft/setup-msbuild@v2
-
-      - name: Build x86
+      - name: CMake Setup
         working-directory: ${{env.GITHUB_WORKSPACE}}
-        run:  msbuild mupen64.sln /p:Configuration=Release /p:Platform=x86 /m -restore -p:RestorePackagesConfig=true
+        run: cmake --preset vcpkg-win64-x86
+
+      - name: CMake Build
+        working-directory: ${{env.GITHUB_WORKSPACE}}
+        run: cmake --build build
 
       - name: 'Upload x86-sse2 build'
         uses: actions/upload-artifact@v4
         with:
           name: mupen-x86-sse2
-          path: build/Views.Win32
+          path: build/out
           retention-days: 14
-  # benchmark:
-  #   needs: build
-  #   runs-on: windows-2025
-
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #       with: 
-  #         fetch-depth: '2'
-
-  #     - name: Download x86 SSE2 Release Artifact
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         name: mupen-x86-sse2
-  #         path: build/
-
-  #     - name: Run x86 benchmark
-  #       shell: powershell
-  #       run: cd tools/benchmark; python benchmark.py; cd ../../;
-
-  #     - name: 'Upload mupen.log'
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: mupen-log
-  #         path: tools/benchmark/mupen.log
-  #         retention-days: 14
-
-  #     - name: 'Upload mupen.dmp'
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: mupen-dmp
-  #         path: tools/benchmark/mupen.dmp
-  #         retention-days: 14
-          
