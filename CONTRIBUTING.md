@@ -10,18 +10,49 @@ Every non-library file must contain the following header:
  */
 ```
 
+Every non-library CMake script must contain the following header:
+
+```cmake
+#[===[
+Copyright (c) 2025, Mupen64 maintainers, contributors, and original authors (Hacktarux, ShadowPrince, linker).
+
+SPDX-License-Identifier: GPL-2.0-or-later
+]===]
+```
+
 # Compiling
+Only Windows is supported for now, though the CMake infrastructure is intended to ease the development of cross-platform code (for whoever decides to work on that).
 
-Open the solution with your IDE of choice and build the solution.
+## Windows/CMake
+You'll need:
+- Visual Studio (for the compiler, CMake, Ninja and vcpkg)
 
-Recommended IDEs are:
+In order for the compiler to work, you'll need to be in a VS developer environment. Then, simply use the provided `vcpkg-win64-x86` preset to compile and build. If you want to change any settings, do so on the command line or via `CMakeUserPresets.json`.
+```sh
+cmake --preset vcpkg-win64-x86
+cmake --build build
+```
 
-- [Visual Studio 2022](https://visualstudio.microsoft.com/vs/)
-- [Rider](https://www.jetbrains.com/rider/)
+The core VCR tests are integrated with CMake, so running the tests is easy:
+```sh
+ctest --test-dir build
+```
 
-For Rider users:
+Presets have been provided for building and testing. These are intended for IDEs, so that they can properly autodetect things. Feel free to contribute IDE launch settings as appropriate.
 
-It's recommended to enable "Use external console" (Run > Modify Run Configuration...).
+### Visual Studio Code + CMake Tools
+You'll need to enable `"cmake.useVsDeveloperEnvironment": "always"` in your workspace settings to convince CMake Tools to set up a VS developer environment.
+
+## CMake Options
+| OPTION                    | DESCRIPTION                                                           |
+|:-------------------------:|-----------------------------------------------------------------------|
+| `MUPEN64RR_USE_SANITIZER` | Specifies a sanitizer to compile with. [`{OFF, ASAN}`, default `OFF`] |
+
+### CLion
+
+Make sure to set the CMake profile to use the `vcpkg-win64-x86` preset, enabling it if needed.
+
+If you aren't presented with a CMake profile selection dialog on startup, you can change the active profile by going to `File -> Settings -> Build, Execution, Deployment -> CMake`.
 
 # Commit Style
 

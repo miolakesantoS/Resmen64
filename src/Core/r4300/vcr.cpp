@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
-#include "stdafx.h"
+#include <CommonPCH.h>
 #include <PlatformService.h>
 #include <Core.h>
 #include <cheats.h>
@@ -1281,7 +1281,7 @@ core_result vcr_start_playback(std::filesystem::path path)
     {
         g_core->log_info(std::format(L"[VCR] Movie has extended version {}", header.extended_version));
 
-        if (g_core->cfg->wii_vc_emulation != header.extended_flags.wii_vc)
+        if ((bool) g_core->cfg->wii_vc_emulation != header.extended_flags.wii_vc)
         {
             bool proceed = g_core->show_ask_dialog(CORE_DLG_VCR_WIIVC_WARNING,
                                                    header.extended_flags.wii_vc ? WII_VC_MISMATCH_A_WARNING_MESSAGE
