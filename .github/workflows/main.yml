@@ -1,6 +1,6 @@
 name: main
 
-on: [ push ]
+on: [push]
 
 env:
   DUMMY: a
@@ -13,13 +13,18 @@ jobs:
       - uses: actions/checkout@v2
       - uses: DoozyX/clang-format-lint-action@v0.18.2
         with:
-          source: './src ./test'
-          exclude: './lib ./tools'
-          extensions: 'h,cpp'
+          source: "./src ./test"
+          exclude: "./lib ./tools"
+          extensions: "h,cpp"
           clangFormatVersion: 18.1.8
           style: file
   build:
     runs-on: windows-latest
+
+    strategy:
+      matrix:
+        arch:
+          - x86
 
     steps:
       - uses: actions/checkout@v4
@@ -40,7 +45,7 @@ jobs:
       - name: CMake Setup
         working-directory: ${{env.GITHUB_WORKSPACE}}
         run: cmake --preset vcpkg-win64-x86
-         
+
       - name: CMake Build
         working-directory: ${{env.GITHUB_WORKSPACE}}
         run: cmake --build build
@@ -49,7 +54,7 @@ jobs:
         working-directory: ${{env.GITHUB_WORKSPACE}}
         run: ctest --test-dir build
 
-      - name: 'Upload x86-sse2 build'
+      - name: "Upload x86-sse2 build"
         uses: actions/upload-artifact@v4
         with:
           name: mupen-x86-sse2
