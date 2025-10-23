@@ -2,20 +2,16 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "type": "shell",
-            "label": "Build Project",
-            "command": "${workspaceFolder}\\.vscode\\build.bat",
-            "options": {
-                "shell": {
-                    "executable": "cmd.exe",
-                    "args": ["/c"]
-                }
-            },
+            "type": "cmake",
+            "label": "CMake: Build",
+            "command": "build",
             "group": {
                 "kind": "build",
                 "isDefault": true
             },
-            "problemMatcher": ["$msCompile"],
+            "problemMatcher": [
+                "$msCompile"
+            ],
             "presentation": {
                 "reveal": "silent",
                 "focus": false,
@@ -23,6 +19,6 @@
                 "showReuseMessage": false,
                 "clear": false
             }
-        }
+        },
     ]
 }
