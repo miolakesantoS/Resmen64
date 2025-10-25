@@ -7,7 +7,6 @@ add_library(Mupen64RR.Common INTERFACE
     "include/CommonPCH.h"
     "include/IOUtils.h"
     "include/MiscHelpers.h"
-    "include/PlatformService.h"
 )
 set_target_properties(Mupen64RR.Common PROPERTIES
     CXX_STANDARD 23
@@ -15,7 +14,7 @@ set_target_properties(Mupen64RR.Common PROPERTIES
 )
 target_include_directories(Mupen64RR.Common INTERFACE include)
 target_link_libraries(Mupen64RR.Common INTERFACE
-    libdeflate::libdeflate_static
+    libdeflate::libdeflate_$<IF:$<TARGET_EXISTS:libdeflate::libdeflate_static>,static,shared>
     vendor::xxhash64
 )
 target_precompile_headers(Mupen64RR.Common INTERFACE "include/CommonPCH.h")

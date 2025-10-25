@@ -15,6 +15,7 @@
 #include <cstdarg>
 #include <cstdint>
 #include <cstdio>
+#include <cstring>
 #include <deque>
 #include <filesystem>
 #include <format>
@@ -40,4 +41,4 @@
 #include <xxh64.h>
 #include "MiscHelpers.h"
 #include "IOUtils.h"
-#include "PlatformService.h"
+// #include "PlatformService.h"

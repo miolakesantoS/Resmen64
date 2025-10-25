@@ -20,7 +20,11 @@
 core_params *g_core{};
 core_ctx g_ctx{};
 
+#if defined(_WIN32)
 #define CORE_EXPORT __declspec(dllexport)
+#else
+#define CORE_EXPORT
+#endif
 
 extern "C"
 {
@@ -37,10 +41,10 @@ EXPORT core_result CALL core_create(core_params *params, core_ctx **ctx)
 {
     g_core = params;
 
-    if (!g_core->io_service)
-    {
-        return IN_MissingComponent;
-    }
+    // if (!g_core->io_service)
+    // {
+    //     return IN_MissingComponent;
+    // }
 
     if (!g_core->log_trace)
     {
