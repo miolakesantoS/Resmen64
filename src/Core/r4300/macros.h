@@ -6,12 +6,16 @@
 
 #pragma once
 
-#ifdef _M_X64
+#if defined(_M_X64) || defined(__x86_64__)
 #include <immintrin.h>
 #include <stdint.h>
 #include <fenv.h>
-#include <intrin.h>
 #include <stdio.h>
+
+#ifdef _MSC_VER
+#include <intrin.h>
+#endif
+
 #endif
 
 #define sign_extended(a) a = (int64_t)((int32_t)a)
@@ -76,7 +80,7 @@
 #define CODE_BLOCK_SIZE 5000
 #define JUMP_TABLE_SIZE 1000
 
-#ifdef _M_X64
+#if defined(_M_X64) || defined(__x86_64__)
 
 #define MUP_ROUND_TRUNC FE_TOWARDZERO
 #define MUP_ROUND_NEAREST FE_TONEAREST
@@ -91,26 +95,30 @@
 
 #define clear_x87_exceptions() feclearexcept(FE_ALL_EXCEPT)
 
-#define read_x87_status_word() fegetexceptflag()
+// #define read_x87_status_word() fegetexceptflag()
 
-static int64_t convert_float_to_int64(float f)
+inline int64_t convert_float_to_int64(float f)
 {
     return _mm_cvtss_si64(_mm_set_ss(f));
 }
 
-static int32_t convert_float_to_int32(float f)
+inline int32_t convert_float_to_int32(float f)
 {
     return _mm_cvtss_si32(_mm_set_ss(f));
 }
 
-static int64_t convert_double_to_int64(double d)
+inline int64_t convert_double_to_int64(double d)
 {
     return _mm_cvtsd_si64(_mm_set_sd(d));
 }
 
-static int32_t convert_double_to_int32(double d)
+inline int32_t convert_double_to_int32(double d)
 {
     return _mm_cvtsd_si32(_mm_set_sd(d));
+}
+
+inline uint16_t read_x87_status_word() {
+    return _mm_getcsr() & 0x3F;
 }
 
 #define FLOAT_CONVERT_L_S(s, d) (*(int64_t *)(d) = convert_float_to_int64(*(float *)(s)))
@@ -131,7 +139,11 @@ static int32_t convert_double_to_int32(double d)
 #define set_ceil() __asm { fldcw ceil_mode }
 #define set_floor() __asm { fldcw floor_mode }
 #define clear_x87_exceptions() __asm { fclex }
-#define read_x87_status_word() __asm { fstsw x87_status_word }
+// #define read_x87_status_word() __asm { fstsw x87_status_word }
+
+inline uint16_t read_x87_status_word() {
+    return _status87() & 0x3F;
+}
 
 // asm converter that respects rounding modes
 #define FLOAT_CONVERT(input_width, output_width)                                                                       \

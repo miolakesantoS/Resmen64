@@ -67,7 +67,6 @@ precomp_block *blocks[0x100000], *actual;
 int32_t rounding_mode = MUP_ROUND_NEAREST;
 int32_t trunc_mode = MUP_ROUND_TRUNC, round_mode = MUP_ROUND_NEAREST, ceil_mode = MUP_ROUND_CEIL,
         floor_mode = MUP_ROUND_FLOOR;
-int16_t x87_status_word;
 void (*code)();
 uint32_t next_vi;
 int32_t vi_field = 0;
@@ -242,7 +241,9 @@ void FIN_BLOCK()
     {
         jump_to((PC - 1)->addr + 4);
         PC->ops();
+        #ifdef MUPEN64RR_ENABLE_DYNAREC
         if (dynacore) dyna_jump();
+        #endif
     }
     else
     {
@@ -259,7 +260,9 @@ void FIN_BLOCK()
         else
             PC->ops();
 
+        #ifdef MUPEN64RR_ENABLE_DYNAREC
         if (dynacore) dyna_jump();
+        #endif
     }
 }
 
@@ -1483,7 +1486,9 @@ void NOTCOMPILED()
             g_core->log_info("not compiled exception");
     }
     PC->ops();
+    #ifdef MUPEN64RR_ENABLE_DYNAREC
     if (dynacore) dyna_jump();
+    #endif
     //*return_address = (uint32_t)(blocks[PC->addr>>12]->code + PC->local_addr);
     // else
     // PC->ops();
@@ -1554,7 +1559,9 @@ inline void jump_to_func()
     }
     PC = actual->block + ((addr - actual->start) >> 2);
 
+    #ifdef MUPEN64RR_ENABLE_DYNAREC
     if (dynacore) dyna_jump();
+    #endif
 }
 #undef addr
 
@@ -1626,7 +1633,7 @@ void core_start()
 
     j = 0;
     debug_count = 0;
-    g_core->log_info("demarrage r4300");
+    g_core->log_info("starting r4300 core");
     memcpy((char *)SP_DMEM + 0x40, rom + 0x40, 0xFBC);
     delay_slot = 0;
     stop = 0;
@@ -1853,8 +1860,23 @@ void core_start()
     init_interrupt();
     interpcore = 0;
 
-    if (!dynacore)
+    // set a default mode if one wasn't set
+    // cached interpreter if dynarec disabled
+    // dynarec if enabled
+    #if !defined(MUPEN64RR_ENABLE_DYNAREC)
+    if (dynacore > 2) dynacore = 0;
+    #else
+    if (dynacore > 2) dynacore = 1;
+    #endif
+
+    switch (dynacore)
     {
+    #if !defined(MUPEN64RR_ENABLE_DYNAREC)
+    case 1:
+        g_core->log_info("dynarec is disabled, switching to cached interpreter");
+    #endif
+    case 0: {
+        // cached interpreter
         g_core->log_info("interpreter");
         init_blocks();
         last_addr = PC->addr;
@@ -1867,15 +1889,10 @@ void core_start()
             g_vr_beq_ignore_jmp = false;
         }
     }
-    else if (dynacore == 2)
-    {
-        dynacore = 0;
-        interpcore = 1;
-        pure_interpreter();
-    }
-    else
-    {
-        dynacore = 1;
+    break;
+    #if defined(MUPEN64RR_ENABLE_DYNAREC)
+    case 1: {
+        // dynamic recompiler
         g_core->log_info("dynamic recompiler");
         init_blocks();
 
@@ -1885,6 +1902,20 @@ void core_start()
         dyna_start(code);
         PC++;
     }
+    break;
+    #endif
+    case 2: {
+        // pure interpreter
+        dynacore = 0;
+        interpcore = 1;
+        pure_interpreter();
+    }
+    break;
+    default:
+        g_core->log_error("this should not happen (dynarec > 2).");
+        abort();
+    }
+
     debug_count += core_Count;
     print_stop_debug();
     for (i = 0; i < 0x100000; i++)
@@ -1936,14 +1967,10 @@ bool open_core_file_stream(const std::filesystem::path &path, FILE **file)
 void clear_save_data()
 {
     // TODO: this assumes the files open.
-    if (!open_core_file_stream(get_eeprom_path(), &g_eeprom_file))
-        abort();
-    if (!open_core_file_stream(get_sram_path(), &g_sram_file))
-        abort();
-    if (!open_core_file_stream(get_flashram_path(), &g_fram_file))
-        abort();
-    if (!open_core_file_stream(get_mempak_path(), &g_mpak_file))
-        abort();
+    if (!open_core_file_stream(get_eeprom_path(), &g_eeprom_file)) abort();
+    if (!open_core_file_stream(get_sram_path(), &g_sram_file)) abort();
+    if (!open_core_file_stream(get_flashram_path(), &g_fram_file)) abort();
+    if (!open_core_file_stream(get_mempak_path(), &g_mpak_file)) abort();
 
     {
         memset(sram, 0, sizeof(sram));
@@ -2089,7 +2116,7 @@ core_result vr_start_rom_impl(std::filesystem::path path)
     g_core->callbacks.emu_starting_changed(true);
 
     // If we get a movie instead of a rom, we try to search the available rom lists to find one matching the movie
-    if (path.extension().compare(L".m64") == 0)
+    if (path.extension().compare(MUPEN64_PATH_T(".m64")) == 0)
     {
         core_vcr_movie_header movie_header{};
         const auto result = g_ctx.vcr_parse_header(path, &movie_header);
@@ -2102,7 +2129,7 @@ core_result vr_start_rom_impl(std::filesystem::path path)
         const auto matching_rom = g_core->find_available_rom([&](auto header) {
             MiscHelpers::strtrim((char *)header.nom, sizeof(header.nom));
             return movie_header.rom_crc1 == header.CRC1 &&
-                   !_strnicmp((const char *)header.nom, movie_header.rom_name, 20);
+                   !StrUtils::c_nicmp((const char *)header.nom, movie_header.rom_name, 20);
         });
 
         if (matching_rom.empty())
