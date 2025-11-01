@@ -50,6 +50,20 @@ static t_instance_context *get_instance_context(const t_lua_environment *env)
 }
 
 /**
+ * \brief Selects the specified instance in the manager dialog.
+ */
+static void select_instance(const t_instance_context &ctx)
+{
+    if (!IsWindow(g_dlg.mgr_hwnd))
+    {
+        return;
+    }
+
+    ListBox_SetCurSel(GetDlgItem(g_dlg.mgr_hwnd, IDC_INSTANCES), 0);
+    SendMessage(g_dlg.mgr_hwnd, WM_COMMAND, MAKEWPARAM(IDC_INSTANCES, LBN_SELCHANGE), 0);
+}
+
+/**
  * \brief Prints text to an instance.
  */
 static void print(t_instance_context &ctx, const std::wstring &text)
@@ -102,6 +116,7 @@ static void stop(t_instance_context &ctx)
 static void start(t_instance_context &ctx, const std::filesystem::path &path)
 {
     stop(ctx);
+
 
     const auto result = LuaManager::create_environment(
         path,
@@ -176,13 +191,7 @@ static std::shared_ptr<t_instance_context> add_and_select_instance(const std::fi
 {
     const auto ctx = add_instance(path);
 
-    if (!IsWindow(g_dlg.mgr_hwnd))
-    {
-        return ctx;
-    }
-
-    ListBox_SetCurSel(GetDlgItem(g_dlg.mgr_hwnd, IDC_INSTANCES), 0);
-    SendMessage(g_dlg.mgr_hwnd, WM_COMMAND, MAKEWPARAM(IDC_INSTANCES, LBN_SELCHANGE), 0);
+    select_instance(*ctx);
 
     return ctx;
 }
@@ -583,7 +592,12 @@ void LuaDialog::start_and_add_if_needed(const std::filesystem::path &path)
         return;
     }
 
-    start(*existing_ctx->get(), path);
+    const auto ctx = *existing_ctx;
+    
+    LuaDialog::show();
+    select_instance(*ctx);
+
+    start(*ctx, path);
 }
 
 void LuaDialog::stop_all()
