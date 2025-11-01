@@ -33,12 +33,14 @@ static INT_PTR CALLBACK dlgproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
         SetFocus(GetDlgItem(hwnd, IDC_SEEKER_FRAME));
         break;
     case WM_DESTROY:
-        EnableWindow(g_main_ctx.hwnd, TRUE);
-        KillTimer(hwnd, seeker.refresh_timer);
         g_main_ctx.core_ctx->vcr_stop_seek();
+        KillTimer(hwnd, seeker.refresh_timer);
+        EnableWindow(g_main_ctx.hwnd, TRUE);
+        SetForegroundWindow(g_main_ctx.hwnd);
+        SetActiveWindow(g_main_ctx.hwnd);
         break;
     case WM_CLOSE:
-        EndDialog(hwnd, IDCANCEL);
+        DestroyWindow(hwnd);
         break;
     case WM_SEEK_COMPLETED:
         SetDlgItemText(hwnd, IDC_SEEKER_STATUS, L"Seek completed");
@@ -96,7 +98,7 @@ static INT_PTR CALLBACK dlgproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
             break;
         }
         case IDCANCEL:
-            EndDialog(hwnd, IDCANCEL);
+            DestroyWindow(hwnd);
             break;
         default:
             break;
