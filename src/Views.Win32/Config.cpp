@@ -552,6 +552,19 @@ static void migrate_config(t_config &config, const mINI::INIStructure &ini)
         migrate_hotkey(std::format("Select slot {}", i),
                        std::vformat(AppActions::SELECT_SLOT_X, std::make_wformat_args(i)));
     }
+
+    // Migrate pre-1.3.0-5 rombrowser paths. We just pick the first one :P
+    if (ini.has("rombrowser_rom_paths"))
+    {
+        const auto &section = ini.get("rombrowser_rom_paths");
+        if (section.size() > 0)
+        {
+            const auto path = section.get("0");
+            config.rom_directory = IOUtils::to_wide_string(path);
+
+            g_view_logger->info(L"[Config] Migrated rom browser path {}", config.rom_directory);
+        }
+    }
 }
 
 void Config::init()
