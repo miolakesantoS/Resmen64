@@ -606,7 +606,7 @@ std::vector<t_options_group> get_static_option_groups()
     folders_group.items.push_back({.type = t_options_item::Type::Folder,
                                    .group_id = folders_group.id,
                                    .name = L"ROMs",
-                                   .tooltip = L"The path to the plugin folder.",
+                                   .tooltip = L"The path to the ROM folder.",
                                    GENPROPS(std::wstring, rom_directory)});
     folders_group.items.push_back({.type = t_options_item::Type::Folder,
                                    .group_id = folders_group.id,
@@ -882,8 +882,7 @@ std::vector<t_options_group> get_static_option_groups()
         .type = t_options_item::Type::Bool,
         .group_id = core_group.id,
         .name = L"Emulate SD Card",
-        .tooltip = L"Enable SD card emulation.\nRequires a VHD-formatted SD card file named card.vhd in the same "
-                   L"folder as Mupen.",
+        .tooltip = L"Enable SD card emulation.\nRequires a VHD-formatted SD card file named card.vhd in the save data folder.",
         GENPROPS(int32_t, core.use_summercart),
     });
     core_group.items.emplace_back(t_options_item{
