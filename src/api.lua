@@ -23,6 +23,11 @@ action = {}
 clipboard = {}
 
 Mupen = {
+    _VERSION = '1.3.0-6',
+    _URL = 'https://github.com/mupen64/mupen64-rr-lua',
+    _DESCRIPTION = 'Mupen64 Lua Scripting API',
+    _LICENSE = 'GPL-2',
+
     ---@enum Result
     ---An enum containing results that can be returned by the core.
     result = {
@@ -1312,7 +1317,7 @@ function input.get() end
 ---@return table
 function input.diff(t1, t2) end
 
----Opens a dialog in which the user can input text. 
+---Opens a dialog in which the user can input text.
 ---If the dialog is cancelled, `nil` is returned.
 ---@nodiscard
 ---@param title string? The title of the text box. Defaults to `"input:"`.
